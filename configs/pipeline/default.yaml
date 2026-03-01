@@ -1,0 +1,7 @@
+defaults:
+  - /encoder@encoder: sentence_transformer
+  - /extractor@extractor: passthrough
+  - /clusterer@clusterer: hdbscan
+  - _self_
+
+device: cpu

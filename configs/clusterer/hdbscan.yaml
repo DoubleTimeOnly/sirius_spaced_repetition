@@ -1,0 +1,3 @@
+_target_: sirius.clusterers.hdbscan_clusterer
+min_cluster_size: 2
+threshold: 0.5

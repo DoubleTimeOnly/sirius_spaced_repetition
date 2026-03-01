@@ -1,6 +1,9 @@
+import logging
 from typing import Any
 
 from .protocols import ClusterFn, EncodeFn, ExtractFn
+
+logger = logging.getLogger(__name__)
 
 
 def cluster_highlights(
@@ -22,5 +25,15 @@ def cluster_highlights(
         appear in multiple clusters (many-to-many).
     """
     core_infos = [extract(h, None) for h in highlights]
+    logger.debug(f"Extracted {len(core_infos)} core infos from highlights")
+    for i, (h, info) in enumerate(zip(highlights, core_infos)):
+        logger.debug(f"Highlight {i}: {h}: {info}")
+
     vectors = [encode(info) for info in core_infos]
-    return cluster(vectors)
+    logger.debug(f"Encoded {len(vectors)} vectors")
+
+    clusters = cluster(vectors)
+    logger.debug(f"Clustered into {len(clusters)} clusters")
+    logger.debug(f"Cluster output: {clusters}")
+
+    return clusters

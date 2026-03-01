@@ -1,0 +1,6 @@
+defaults:
+  - pipeline: default
+  - _self_
+
+logging:
+  level: DEBUG

@@ -1,0 +1,3 @@
+_target_: sirius.extractors.local_llm_extractor
+model: HuggingFaceTB/SmolLM2-1.7B-Instruct
+device: auto
