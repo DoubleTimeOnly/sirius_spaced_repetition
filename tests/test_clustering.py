@@ -1,6 +1,6 @@
 """Smoke tests for the clustering pipeline using local-only dependencies."""
 
-import sirius_srs
+import sirius
 
 
 HIGHLIGHTS = [
@@ -21,11 +21,11 @@ HIGHLIGHTS = [
 
 
 def test_passthrough_pipeline_returns_dict():
-    extract = sirius_srs.passthrough_extractor()
-    encode = sirius_srs.sentence_transformer_encoder()
-    cluster = sirius_srs.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
+    extract = sirius.passthrough_extractor()
+    encode = sirius.sentence_transformer_encoder()
+    cluster = sirius.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
 
-    result = sirius_srs.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
+    result = sirius.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
 
     assert isinstance(result, dict)
     for cluster_key, indices in result.items():
@@ -35,11 +35,11 @@ def test_passthrough_pipeline_returns_dict():
 
 
 def test_highlights_appear_in_clusters():
-    extract = sirius_srs.passthrough_extractor()
-    encode = sirius_srs.sentence_transformer_encoder()
-    cluster = sirius_srs.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
+    extract = sirius.passthrough_extractor()
+    encode = sirius.sentence_transformer_encoder()
+    cluster = sirius.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
 
-    result = sirius_srs.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
+    result = sirius.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
 
     # At least one cluster should be found given the clearly related highlights
     assert len(result) >= 1
@@ -51,12 +51,12 @@ def test_highlights_appear_in_clusters():
 
 def test_many_to_many_possible():
     """A highlight can appear in more than one cluster."""
-    extract = sirius_srs.passthrough_extractor()
-    encode = sirius_srs.sentence_transformer_encoder()
+    extract = sirius.passthrough_extractor()
+    encode = sirius.sentence_transformer_encoder()
     # Lower threshold encourages many-to-many membership
-    cluster = sirius_srs.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
+    cluster = sirius.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
 
-    result = sirius_srs.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
+    result = sirius.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
 
     # Count how many clusters each highlight appears in
     membership_counts = [0] * len(HIGHLIGHTS)

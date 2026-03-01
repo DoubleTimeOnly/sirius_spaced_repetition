@@ -1,0 +1,2 @@
+_target_: sirius.extractors.claude_code_extractor
+model: haiku
