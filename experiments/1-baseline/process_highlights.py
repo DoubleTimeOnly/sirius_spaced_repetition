@@ -26,10 +26,7 @@ HIGHLIGHTS = [
 if __name__ == "__main__":
     cfg = load_config(
         config_name="default_process.yaml",
-        overrides=[
-            "extractor@pipeline.extractor=local_llm",
-            "pipeline.device=cuda",
-        ],
+        overrides=[],
     )
     set_logging_level(cfg.logging.level)
 
