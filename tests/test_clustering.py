@@ -22,7 +22,7 @@ HIGHLIGHTS = [
 
 def test_passthrough_pipeline_returns_dict():
     extract = sirius.passthrough_extractor()
-    encode = sirius.sentence_transformer_encoder()
+    encode = sirius.sentence_transformer_encoder(device="cpu")
     cluster = sirius.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
 
     result = sirius.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
@@ -36,7 +36,7 @@ def test_passthrough_pipeline_returns_dict():
 
 def test_highlights_appear_in_clusters():
     extract = sirius.passthrough_extractor()
-    encode = sirius.sentence_transformer_encoder()
+    encode = sirius.sentence_transformer_encoder(device="cpu")
     cluster = sirius.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
 
     result = sirius.cluster_highlights(HIGHLIGHTS, extract, encode, cluster)
@@ -52,7 +52,7 @@ def test_highlights_appear_in_clusters():
 def test_many_to_many_possible():
     """A highlight can appear in more than one cluster."""
     extract = sirius.passthrough_extractor()
-    encode = sirius.sentence_transformer_encoder()
+    encode = sirius.sentence_transformer_encoder(device="cpu")
     # Lower threshold encourages many-to-many membership
     cluster = sirius.hdbscan_clusterer(min_cluster_size=2, threshold=0.5)
 
