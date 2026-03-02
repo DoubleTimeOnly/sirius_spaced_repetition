@@ -27,7 +27,13 @@ def cluster_highlights(
     core_infos = [extract(h, None) for h in highlights]
     logger.debug(f"Extracted {len(core_infos)} core infos from highlights")
     for i, (h, info) in enumerate(zip(highlights, core_infos)):
-        logger.debug(f"Highlight {i}: {h}: {info}")
+        output_str = ""
+        output_str += f"\/terminaln===== Highlight {i} =====\n"
+        len_header = len(output_str)
+        output_str += f"Original: {h}\n"
+        output_str += "-" * len_header + "\n"
+        output_str += f"Core info: {info}\n"
+        logger.debug(output_str)
 
     vectors = [encode(info) for info in core_infos]
     logger.debug(f"Encoded {len(vectors)} vectors")
