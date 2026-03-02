@@ -14,4 +14,8 @@ EncodeFn = Callable[[str], np.ndarray]
 # vectors -> {cluster_key: {highlight_indices}}
 ClusterFn = Callable[[list[np.ndarray]], ClusterMapping]
 
-PipelineFn = Callable[[Highlights], ClusterMapping]
+# filepath -> highlights
+HighlightParserFn = Callable[[str], Highlights]
+
+# filepath -> clusters
+PipelineFn = Callable[[str], ClusterMapping]

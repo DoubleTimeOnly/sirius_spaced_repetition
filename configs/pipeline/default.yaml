@@ -1,6 +1,7 @@
 defaults:
+  - /highlight_parser@highlight_parser: readwise_markdown
   - /encoder@encoder: sentence_transformer
-  - /extractor@extractor: passthrough
+  - /extractor@extractor: local_llm
   - /clusterer@clusterer: hdbscan
   - _self_
 
