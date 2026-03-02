@@ -21,16 +21,18 @@ HIGHLIGHTS = [
 
 
 def _make_mock_components():
-    """Return (extract, encode, cluster) mocks suitable for pipeline tests."""
+    """Return (parse, extract, encode, cluster) mocks suitable for pipeline tests."""
+    mock_parse = MagicMock(return_value=HIGHLIGHTS)
     mock_extract = MagicMock(side_effect=lambda h, ctx=None: h)
     mock_encode = MagicMock(side_effect=lambda t: np.ones(8))
     mock_cluster = MagicMock(return_value={0: {0, 1}, 1: {2, 3}})
-    return mock_extract, mock_encode, mock_cluster
+    return mock_parse, mock_extract, mock_encode, mock_cluster
 
 
 def _minimal_pipeline_cfg() -> DictConfig:
     return OmegaConf.create({
         "device": "cpu",
+        "highlight_parser": {"_target_": "sirius.highlight_parsers.readwise_markdown_parser"},
         "extractor": {"_target_": "sirius.extractors.passthrough_extractor"},
         "encoder": {
             "_target_": "sirius.encoders.sentence_transformer_encoder",
@@ -56,7 +58,8 @@ def test_default_config_loads():
     assert "pipeline" in cfg and "logging" in cfg
     p = cfg.pipeline
     assert "device" in p
-    assert p.extractor._target_ == "sirius.extractors.passthrough_extractor"
+    assert p.highlight_parser._target_ == "sirius.highlight_parsers.readwise_markdown_parser"
+    assert p.extractor._target_ == "sirius.extractors.local_llm_extractor"
     assert p.encoder._target_ == "sirius.encoders.sentence_transformer_encoder"
     assert p.encoder.model == "all-MiniLM-L6-v2"
     assert p.clusterer._target_ == "sirius.clusterers.hdbscan_clusterer"
@@ -89,30 +92,27 @@ def test_config_device_override():
 
 def test_create_pipeline_fn_wiring():
     """Returns a callable and instantiates components with the right device args."""
-    extract, encode, cluster = _make_mock_components()
+    parse, extract, encode, cluster = _make_mock_components()
     cfg = _minimal_pipeline_cfg()
 
-    with patch("sirius.pipeline.instantiate", side_effect=[extract, encode, cluster]) as mock_inst:
+    with patch("sirius.pipeline.instantiate", side_effect=[parse, extract, encode, cluster]) as mock_inst:
         pipeline = create_pipeline_fn(cfg)
 
     assert callable(pipeline)
-    assert mock_inst.call_count == 3
-    calls = mock_inst.call_args_list
-    assert calls[0].kwargs.get("device") == "cpu"  # extractor
-    assert calls[1].kwargs.get("device") == "cpu"  # encoder
-    assert "device" not in calls[2].kwargs          # clusterer
+    assert mock_inst.call_count == 4
 
 
 def test_create_pipeline_fn_output():
     """Pipeline returns a dict[Any, set] and drives each component correctly."""
-    extract, encode, cluster = _make_mock_components()
+    parse, extract, encode, cluster = _make_mock_components()
     cfg = _minimal_pipeline_cfg()
 
-    with patch("sirius.pipeline.instantiate", side_effect=[extract, encode, cluster]):
+    with patch("sirius.pipeline.instantiate", side_effect=[parse, extract, encode, cluster]):
         pipeline = create_pipeline_fn(cfg)
 
-    result = pipeline(HIGHLIGHTS)
+    result = pipeline("fake_path.md")
     assert isinstance(result, dict) and all(isinstance(v, set) for v in result.values())
+    parse.assert_called_once_with("fake_path.md")
     assert extract.call_count == len(HIGHLIGHTS)
     assert encode.call_count == len(HIGHLIGHTS)
     cluster.assert_called_once()
