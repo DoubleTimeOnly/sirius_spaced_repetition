@@ -1,0 +1,3 @@
+_target_: sirius.graph_creators.local_llm_graph_creator
+model: HuggingFaceTB/SmolLM2-1.7B-Instruct
+device: ${pipeline.device}

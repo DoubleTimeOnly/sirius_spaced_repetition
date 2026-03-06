@@ -19,3 +19,6 @@ HighlightParserFn = Callable[[str], Highlights]
 
 # filepath -> clusters
 PipelineFn = Callable[[str], ClusterMapping]
+
+# (cluster_mapping, raw highlights) -> JSON Canvas dict
+GraphCreatorFn = Callable[[ClusterMapping, Highlights], dict]

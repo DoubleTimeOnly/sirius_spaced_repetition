@@ -3,6 +3,7 @@ defaults:
   - /encoder@encoder: sentence_transformer
   - /extractor@extractor: local_llm
   - /clusterer@clusterer: hdbscan
+  - /graph_creator@graph_creator: none
   - _self_
 
 device: cpu
