@@ -64,7 +64,7 @@ def _build_user_message(cluster_mapping: ClusterMapping, highlights: Highlights)
     for cluster_key, indices in cluster_mapping.items():
         lines.append(f"=== Cluster {cluster_key} ===")
         for idx in sorted(indices):
-            lines.append(f"  - {highlights[idx]}")
+            lines.append(f"  - {highlights[idx].text}")
     return "\n".join(lines)
 
 
@@ -113,7 +113,7 @@ def passthrough_graph_creator() -> GraphCreatorFn:
                     "width": TEXT_WIDTH,
                     "height": TEXT_HEIGHT,
                     "type": "text",
-                    "text": highlights[highlight_idx],
+                    "text": highlights[highlight_idx].text,
                 })
 
         return {"nodes": nodes, "edges": edges}

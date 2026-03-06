@@ -1,8 +1,16 @@
+from dataclasses import dataclass
 from typing import Any, Callable
 
 import numpy as np
 
-Highlights = list[str]
+
+@dataclass
+class Highlight:
+    text: str
+    context: str | None = None
+
+
+Highlights = list[Highlight]
 ClusterMapping = dict[Any, set[int]]  # cluster_key -> set of highlight indices
 
 # highlight, optional_context -> core_info_string

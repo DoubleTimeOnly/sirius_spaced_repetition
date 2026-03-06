@@ -1324,6 +1324,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
+    { name = "httpx" },
     { name = "hydra-core" },
     { name = "numpy" },
     { name = "scikit-learn" },
@@ -1346,6 +1347,7 @@ gpu = [
 requires-dist = [
     { name = "accelerate", marker = "extra == 'gpu'" },
     { name = "anthropic" },
+    { name = "httpx" },
     { name = "hydra-core", specifier = ">=1.3" },
     { name = "numpy" },
     { name = "pytest", marker = "extra == 'dev'" },

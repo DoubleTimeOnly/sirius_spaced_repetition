@@ -7,16 +7,17 @@ import pytest
 from omegaconf import DictConfig, OmegaConf
 
 from sirius.pipeline import _output_dir, _save_canvas, create_pipeline_fn
+from sirius.protocols import Highlight, Highlights
 from sirius.utils.hydra_utils import load_config
 
 
-HIGHLIGHTS = [
-    "Storage strength is how well learned something is.",
-    "Retrieval strength is how easily information comes to mind.",
-    "Spacing improves long-term retention.",
-    "Testing beats re-reading on delayed tests.",
-    "The harder you work to recall, the more you learn.",
-    "Cramming works short-term; spacing works long-term.",
+HIGHLIGHTS: Highlights = [
+    Highlight(text="Storage strength is how well learned something is."),
+    Highlight(text="Retrieval strength is how easily information comes to mind."),
+    Highlight(text="Spacing improves long-term retention."),
+    Highlight(text="Testing beats re-reading on delayed tests."),
+    Highlight(text="The harder you work to recall, the more you learn."),
+    Highlight(text="Cramming works short-term; spacing works long-term."),
 ]
 
 

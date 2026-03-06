@@ -11,15 +11,14 @@ from sirius.graph_creators import (
     null_graph_creator,
     passthrough_graph_creator,
 )
-from sirius.protocols import ClusterMapping, Highlights
-
+from sirius.protocols import ClusterMapping, Highlight, Highlights
 
 CLUSTER_MAPPING: ClusterMapping = {0: {0, 1}, 1: {2, 3}}
 HIGHLIGHTS: Highlights = [
-    "Storage strength is how well something is learned.",
-    "Retrieval strength is how easily info comes to mind.",
-    "Spacing improves long-term retention.",
-    "Testing beats re-reading on delayed tests.",
+    Highlight(text="Storage strength is how well something is learned."),
+    Highlight(text="Retrieval strength is how easily info comes to mind."),
+    Highlight(text="Spacing improves long-term retention."),
+    Highlight(text="Testing beats re-reading on delayed tests."),
 ]
 
 
@@ -71,7 +70,7 @@ def test_passthrough_text_nodes_contain_highlight_text():
     text_nodes = [n for n in canvas["nodes"] if n["type"] == "text"]
     texts = {n["text"] for n in text_nodes}
     for idx in [0, 1, 2, 3]:
-        assert HIGHLIGHTS[idx] in texts
+        assert HIGHLIGHTS[idx].text in texts
 
 
 def test_passthrough_no_edges():

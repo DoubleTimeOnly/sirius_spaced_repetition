@@ -1,22 +1,23 @@
 """Smoke tests for the clustering pipeline using local-only dependencies."""
 
 import sirius
+from sirius.protocols import Highlight, Highlights
 
 
-HIGHLIGHTS = [
+HIGHLIGHTS: Highlights = [
     # Memory / retrieval group
-    "Any memory has two strengths, a storage strength and a retrieval strength.",
-    "Storage strength is a measure of how well learned something is.",
-    "Retrieval strength is a measure of how easily a nugget of information comes to mind.",
-    "No memory is ever 'lost'; it is just not currently accessible — its retrieval strength is low.",
+    Highlight(text="Any memory has two strengths, a storage strength and a retrieval strength."),
+    Highlight(text="Storage strength is a measure of how well learned something is."),
+    Highlight(text="Retrieval strength is a measure of how easily a nugget of information comes to mind."),
+    Highlight(text="No memory is ever 'lost'; it is just not currently accessible — its retrieval strength is low."),
     # Spacing / practice group
-    "People learn at least as much, and retain it much longer, when they space their study time.",
-    "Cramming works fine in a pinch. It just doesn't last. Spacing does.",
-    "The optimal interval between sessions scales with how far away the exam is.",
+    Highlight(text="People learn at least as much, and retain it much longer, when they space their study time."),
+    Highlight(text="Cramming works fine in a pinch. It just doesn't last. Spacing does."),
+    Highlight(text="The optimal interval between sessions scales with how far away the exam is."),
     # Desirable difficulty group
-    "The harder your brain has to work to dig out a memory, the greater the increase in learning.",
-    "Testing > studying, by a country mile, on delayed tests.",
-    "Spend the first third of your time memorizing, and the remaining two thirds reciting from memory.",
+    Highlight(text="The harder your brain has to work to dig out a memory, the greater the increase in learning."),
+    Highlight(text="Testing > studying, by a country mile, on delayed tests."),
+    Highlight(text="Spend the first third of your time memorizing, and the remaining two thirds reciting from memory."),
 ]
 
 
