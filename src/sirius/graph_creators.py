@@ -1,9 +1,13 @@
 import json
+import logging
 import uuid
+from pathlib import Path
 
 import anthropic
 
 from .protocols import ClusterMapping, GraphCreatorFn, Highlights
+
+logger = logging.getLogger(__name__)
 
 _LOCAL_LLM_SYSTEM_PROMPT = """\
 You are a knowledge graph architect. You will receive clusters of highlights from a book or article.
@@ -38,7 +42,7 @@ Rules:
 - Keep the graph informative and non-redundant. Prefer depth over breadth.
 
 Output ONLY a JSON object with two keys: "nodes" and "edges".
-Do not output any markdown fences or commentary.
+Do not output any markdown fences or commentary. Make sure the output is valid JSON. This means using double quotes (not smart quotes) for all strings, including keys and values.
 
 Node schema (group):
   {"id": "<uuid>", "x": <int>, "y": <int>, "width": <int>, "height": <int>,
@@ -57,6 +61,16 @@ Each text node inside a group is 360px wide and 80px tall, padded 20px from the 
 stacked vertically with 20px padding from the top and 10px between nodes.
 Groups are tall enough to fit their text nodes with 20px padding at the bottom.
 """
+
+_EXAMPLES_DIR = Path(__file__).parents[2] / "examples"
+
+with open(_EXAMPLES_DIR / "How We Learn - Benedict Carey.canvas", "r") as f:
+    _EXAMPLE_CANVAS = json.load(f)
+
+with open(_EXAMPLES_DIR / "How We Learn - Benedict Carey.md", "r") as f:
+    _EXAMPLE_HIGHLIGHTS = f.read()
+
+_SYSTEM_PROMPT += f"\n\nHere is an example of good output. The input highlights are delimited by triple backticks, and the corresponding JSON Canvas graph is shown after that:\n\n```\n{_EXAMPLE_HIGHLIGHTS}\n```\n\nExample output:\n\n{json.dumps(_EXAMPLE_CANVAS, indent=2)}\n"
 
 
 def _build_user_message(cluster_mapping: ClusterMapping, highlights: Highlights) -> str:
@@ -121,20 +135,21 @@ def passthrough_graph_creator() -> GraphCreatorFn:
     return create_graph
 
 
-def claude_graph_creator(model: str = "claude-haiku-4-5-20251001") -> GraphCreatorFn:
+def claude_graph_creator(model: str = "claude-haiku-4-5-20251001", api_key: str | None = None) -> GraphCreatorFn:
     """Return a graph creator that uses Claude to produce a JSON Canvas knowledge graph.
 
     Args:
         model: Claude model ID to use.
+        api_key: Anthropic API key. Defaults to ANTHROPIC_API_KEY env var.
     """
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(api_key=api_key)
 
     def create_graph(cluster_mapping: ClusterMapping, highlights: Highlights) -> dict:
         user_content = _build_user_message(cluster_mapping, highlights)
 
         message = client.messages.create(
             model=model,
-            max_tokens=4096,
+            max_tokens=4 * 4096,
             system=_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_content}],
         )
@@ -144,6 +159,7 @@ def claude_graph_creator(model: str = "claude-haiku-4-5-20251001") -> GraphCreat
             raw = raw.split("\n", 1)[1]
             raw = raw.rsplit("```", 1)[0].strip()
 
+        logger.debug("Raw graph JSON from Claude:\n%s", raw)
         return json.loads(raw)
 
     return create_graph
@@ -182,6 +198,7 @@ def local_llm_graph_creator(
             raw = raw.split("\n", 1)[1]
             raw = raw.rsplit("```", 1)[0].strip()
 
+        logger.debug("Raw graph JSON from local LLM:\n%s", raw)
         return json.loads(raw)
 
     return create_graph

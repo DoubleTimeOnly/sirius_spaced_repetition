@@ -1,6 +1,8 @@
 import logging
 from typing import Any
 
+from sirius.utils.cluster_viz import pprint_clusters
+
 from .protocols import ClusterFn, EncodeFn, ExtractFn, Highlights
 
 logger = logging.getLogger(__name__)
@@ -41,5 +43,8 @@ def cluster_highlights(
     clusters = cluster(vectors)
     logger.debug(f"Clustered into {len(clusters)} clusters")
     logger.debug(f"Cluster output: {clusters}")
+
+    if logger.level <= logging.DEBUG:
+        pprint_clusters(clusters, highlights)
 
     return clusters

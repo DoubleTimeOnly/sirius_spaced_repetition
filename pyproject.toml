@@ -16,6 +16,11 @@ dependencies = [
 dev = ["pytest"]
 gpu = ["torch", "torchvision", "torchaudio", "accelerate"]
 
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests that call external APIs (skipped by default)",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

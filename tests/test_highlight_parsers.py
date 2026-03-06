@@ -192,7 +192,7 @@ def test_api_parser_numeric_query_skips_search(monkeypatch):
 def test_api_parser_string_query_searches_by_title(monkeypatch):
     parse = _api_parser_with_env(monkeypatch)
 
-    search_resp = _make_httpx_response({"results": [{"id": 99}]})
+    search_resp = _make_httpx_response({"results": [{"id": 99, "title": "How We Learn"}]})
     highlights_resp = _make_httpx_response({"results": [{"text": "A highlight."}], "next": None})
     book_meta_resp = _make_httpx_response({
         "id": 99, "title": "How We Learn",

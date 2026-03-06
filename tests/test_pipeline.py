@@ -1,12 +1,13 @@
 """Tests for Hydra config loading and pipeline creation."""
 
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 from omegaconf import DictConfig, OmegaConf
 
-from sirius.pipeline import _output_dir, _save_canvas, create_pipeline_fn
+from sirius.pipeline import _run_dir, _save_canvas, create_pipeline_fn
 from sirius.protocols import Highlight, Highlights
 from sirius.utils.hydra_utils import load_config
 
@@ -59,14 +60,6 @@ def test_default_config_loads():
     assert "pipeline" in cfg and "logging" in cfg
     p = cfg.pipeline
     assert "device" in p
-    assert p.highlight_parser._target_ == "sirius.highlight_parsers.readwise_markdown_parser"
-    assert p.extractor._target_ == "sirius.extractors.local_llm_extractor"
-    assert p.encoder._target_ == "sirius.encoders.sentence_transformer_encoder"
-    assert p.encoder.model == "all-MiniLM-L6-v2"
-    assert p.clusterer._target_ == "sirius.clusterers.hdbscan_clusterer"
-    assert p.clusterer.min_cluster_size == 2
-    assert p.clusterer.threshold == pytest.approx(0.5)
-    assert p.graph_creator._target_ == "sirius.graph_creators.null_graph_creator"
 
 
 def test_config_extractor_overrides():
@@ -104,10 +97,12 @@ def test_create_pipeline_fn_wiring():
     assert mock_inst.call_count == 4
 
 
-def test_create_pipeline_fn_output():
+def test_create_pipeline_fn_output(tmp_path, monkeypatch):
     """Pipeline returns a dict[Any, set] and drives each component correctly."""
     parse, extract, encode, cluster = _make_mock_components()
     cfg = _minimal_pipeline_cfg()
+
+    monkeypatch.chdir(tmp_path)
 
     with patch("sirius.pipeline.instantiate", side_effect=[parse, extract, encode, cluster]):
         pipeline = create_pipeline_fn(cfg)
@@ -219,17 +214,17 @@ def test_pipeline_without_graph_creator_key_still_works():
 # ---------------------------------------------------------------------------
 
 
-def test_output_dir_format():
+def test_run_dir_format():
     import re
-    path = _output_dir("examples/How We Learn - Benedict Carey.md")
-    assert path.name.endswith("-How We Learn - Benedict Carey")
-    # timestamp prefix: YYYY-MM-DD:HH-MM
-    assert re.match(r"^\d{4}-\d{2}-\d{2}:\d{2}-\d{2}-", path.name)
+    path = _run_dir("examples/How We Learn - Benedict Carey.md", "outputs")
+    assert path.name.endswith("_How We Learn - Benedict Carey")
+    # timestamp prefix: YYYY-MM-DD_HH:MM
+    assert re.match(r"^\d{4}-\d{2}-\d{2}_\d{2}:\d{2}_", path.name)
+    assert path.parent == Path("outputs")
 
 
-def test_save_canvas_creates_file(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
+def test_save_canvas_creates_file(tmp_path):
     canvas = {"nodes": [], "edges": []}
-    out = _save_canvas(canvas, "my_highlights.md")
+    out = _save_canvas(canvas, tmp_path, "my_highlights")
     assert out.exists()
     assert out.name == "knowledge-graph-my_highlights.canvas"

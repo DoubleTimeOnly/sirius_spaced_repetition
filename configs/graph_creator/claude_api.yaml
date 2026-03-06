@@ -1,2 +1,3 @@
 _target_: sirius.graph_creators.claude_graph_creator
 model: claude-haiku-4-5-20251001
+api_key: ${secrets.claude_api}

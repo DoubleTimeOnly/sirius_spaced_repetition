@@ -1,9 +1,10 @@
 defaults:
-  - /highlight_parser@highlight_parser: readwise_markdown
+  - /highlight_parser@highlight_parser: readwise_api
   - /encoder@encoder: sentence_transformer
-  - /extractor@extractor: local_llm
+  - /extractor@extractor: passthrough
   - /clusterer@clusterer: hdbscan
   - /graph_creator@graph_creator: none
   - _self_
 
 device: cpu
+output_base_dir: outputs
