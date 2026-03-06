@@ -1,4 +1,6 @@
 temp/*
+configs/secrets.yaml
+outputs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

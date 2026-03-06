@@ -12,16 +12,16 @@ def passthrough_extractor() -> ExtractFn:
     return extract
 
 
-def claude_extractor(model: str = "claude-haiku-4-5-20251001") -> ExtractFn:
+def claude_extractor(model: str = "claude-haiku-4-5-20251001", api_key: str | None = None) -> ExtractFn:
     """Return an extractor that uses Claude to distil the core information from a highlight.
 
     Args:
         model: Claude model ID to use.
+        api_key: Anthropic API key. Defaults to ANTHROPIC_API_KEY env var.
     """
-    raise NotImplementedError("No access to Claude API")
     import anthropic
 
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(api_key=api_key)
 
     def extract(highlight: str, context: str | None = None) -> str:
         user_content = highlight
@@ -106,7 +106,7 @@ def local_llm_extractor(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},
         ]
-        result = pipe(messages, max_new_tokens=256, max_length=None)
+        result = pipe(messages, max_new_tokens=256)
         return result[0]["generated_text"][-1]["content"]
 
     return extract

@@ -1,12 +1,16 @@
 
 
-from sirius.protocols import ClusterMapping
+import logging
+
+from sirius.protocols import ClusterMapping, Highlight
+
+logger = logging.getLogger("sirius.cluster_viz")
 
 
-def pprint_clusters(clusters: ClusterMapping, highlights: list[str]) -> None:
+def pprint_clusters(clusters: ClusterMapping, highlights: list[Highlight]) -> None:
     """Pretty-print clusters of highlights."""
     for cluster_key, indices in clusters.items():
-        print(f"Cluster {cluster_key}:")
+        logger.debug("Cluster %s:", cluster_key)
         for i in indices:
-            print(f"  - {highlights[i]}")
-        print()
+            logger.debug("  - %s", highlights[i].text)
+        logger.debug("")

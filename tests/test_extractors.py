@@ -21,12 +21,6 @@ def test_passthrough_extractor_passes_through_input():
     assert extract("") == ""
 
 
-def test_claude_extractor_raises_not_implemented():
-    """Factory raises NotImplementedError immediately (no API access)."""
-    with pytest.raises(NotImplementedError):
-        claude_extractor()
-
-
 def test_claude_code_extractor_returns_callable():
     assert callable(claude_code_extractor())
     assert callable(claude_code_extractor(model="sonnet"))
