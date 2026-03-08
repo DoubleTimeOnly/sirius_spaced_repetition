@@ -297,7 +297,8 @@ def test_api_parser_article_context_extraction(monkeypatch):
         result = parse("42")
 
     assert result[0].context is not None
-    assert "Before sentence" in result[0].context or "After sentence" in result[0].context
+    before, after = result[0].context
+    assert "Before sentence" in before or "After sentence" in after
 
 
 def test_api_parser_epub_context_extraction(monkeypatch):
@@ -328,7 +329,8 @@ def test_api_parser_epub_context_extraction(monkeypatch):
         result = parse("42")
 
     assert result[0].context is not None
-    assert "Before sentence" in result[0].context or "After sentence" in result[0].context
+    before, after = result[0].context
+    assert "Before sentence" in before or "After sentence" in after
 
 
 def test_api_parser_context_none_when_highlight_not_in_doc(monkeypatch):
@@ -417,6 +419,57 @@ def test_api_parser_falls_back_to_title_match(monkeypatch):
     assert result[0].text == "A highlight."
 
 
+def test_api_parser_context_ignores_bullet_fragments(monkeypatch):
+    """Bullet list labels like 'e.' must not match highlights via substring (e.g. 'lecture.')."""
+    parse = _api_parser_with_env(monkeypatch, context_sentences=1)
+
+    highlight_text = (
+        "Distraction is a hazard if you need continuous focus, like when listening to a lecture. "
+        "But a short study break—five, ten, twenty minutes to check in on Facebook, respond to a few emails, "
+        "check sports scores—is the most effective technique learning scientists know of to help you solve a "
+        "problem when you're stuck. Distracting yourself from the task at hand allows you to let go of "
+        "mistaken assumptions, reexamine the clues in a new way, and come back fresh."
+    )
+    # Bullets a.–e. produce degenerate sentences; "e." is a substring of "lecture."
+    # so without the fix it would be matched instead of the real highlight sentence.
+    doc_html = (
+        "<p>a. First technique.</p>"
+        "<p>b. Second technique.</p>"
+        "<p>c. Third technique.</p>"
+        "<p>d. Fourth technique.</p>"
+        "<p>e. Fifth technique.</p>"
+        "<p>No.</p>"
+        "<p>Distraction is a hazard if you need continuous focus, like when listening to a lecture.</p>"
+        "<p>But a short study break—five, ten, twenty minutes to check in on Facebook, respond to a few emails, "
+        "check sports scores—is the most effective technique learning scientists know of to help you solve a "
+        "problem when you're stuck.</p>"
+        "<p>Distracting yourself from the task at hand allows you to let go of "
+        "mistaken assumptions, reexamine the clues in a new way, and come back fresh.</p>"
+    )
+
+    highlights_resp = _make_httpx_response({"results": [{"text": highlight_text}], "next": None})
+    book_meta_resp = _make_httpx_response({
+        "id": 42, "title": "How We Learn",
+        "source_url": "https://example.com/how-we-learn", "category": "article",
+    })
+    reader_list_resp = _make_httpx_response({
+        "results": [{"id": "doc-42", "source_url": "https://example.com/how-we-learn",
+                     "title": "How We Learn", "category": "article"}],
+        "next": None,
+    })
+    article_resp = _make_httpx_response({"results": [{"html_content": doc_html}]})
+
+    with patch("httpx.get", side_effect=[highlights_resp, book_meta_resp, reader_list_resp, article_resp]):
+        result = parse("42")
+
+    assert result[0].context is not None
+    before, after = result[0].context
+    # The sentence before the highlight is "No.", not a bullet fragment
+    assert "No." in before
+    # The after should be the continuation sentences, not content before the highlight
+    assert "short study break" in after or "Distracting yourself" in after
+
+
 def test_api_parser_epub_parsing(monkeypatch):
     """EPUB multi-chapter text is extracted and used for context."""
     monkeypatch.setenv("READWISE_API_KEY", "test-key")
@@ -450,4 +503,5 @@ def test_api_parser_epub_parsing(monkeypatch):
     assert result[0].text == "Chapter one content."
     # With context_sentences=1, context should include the adjacent sentence from ch2
     assert result[0].context is not None
-    assert "Chapter two content" in result[0].context
+    _, after = result[0].context
+    assert "Chapter two content" in after
