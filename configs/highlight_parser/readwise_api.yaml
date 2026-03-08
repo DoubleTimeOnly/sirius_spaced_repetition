@@ -1,2 +1,2 @@
 _target_: sirius.highlight_parsers.readwise_api_parser
-context_sentences: 4
+context_sentences: [2, 0]

@@ -26,7 +26,7 @@ def readwise_markdown_parser() -> HighlightParserFn:
     return parse
 
 
-def readwise_api_parser(context_sentences: int = 4) -> HighlightParserFn:
+def readwise_api_parser(context_sentences: int | tuple[int, int] = 1) -> HighlightParserFn:
     """Return a parser that fetches highlights from the Readwise API.
 
     The ``filepath`` argument (per the HighlightParserFn protocol) is repurposed
@@ -244,13 +244,19 @@ def readwise_api_parser(context_sentences: int = 4) -> HighlightParserFn:
     def _sentences(text: str) -> list[str]:
         return re.split(r'(?<=[.!?])\s+', text)
 
-    def _extract_context(doc_text: str, highlight_text: str, n: int) -> str | None:
+    def _extract_context(doc_text: str, highlight_text: str, n_before: int, n_after: int) -> str | None:
         sentences = _sentences(doc_text)
         for i, sent in enumerate(sentences):
+            if len(sent.strip()) < 10:  # skip degenerate fragments (e.g. bullet labels "e.", "a.")
+                continue
             if highlight_text[:60] in sent or sent[:60] in highlight_text:
-                before = sentences[max(0, i - n):i]
-                after = sentences[i + 1:i + 1 + n]
-                return " ".join(before + after) or None
+                # TODO: we should aim to include the skipped sentences in the context.
+                # Like we find the highlight sentence index first, then expand outwards to find a window of n sentences on either side.
+                # Degenerate sentence fragments would be included but not count against the n sentence limit.
+                before = " ".join(sentences[max(0, i - n_before):i])
+                # TODO: This method fails for multi-sentence highlights that span sentence boundaries. A more robust method would be to find the start and end sentence indices that overlap with the highlight, then take n sentences before the start and n sentences after the end.
+                after = " ".join(sentences[i + 1:i + 1 + n_after])
+                return (before, after) or None
         return None
 
     def parse(query: str) -> Highlights:
@@ -259,10 +265,14 @@ def readwise_api_parser(context_sentences: int = 4) -> HighlightParserFn:
         meta = _fetch_book_metadata(book_id)
         reader_doc = _find_reader_document(meta["title"], meta.get("source_url"))
         doc_text = _fetch_document_text(reader_doc)
+        if isinstance(context_sentences, int):
+            n_before = n_after = context_sentences
+        else:
+            n_before, n_after = context_sentences
         return [
             Highlight(
                 text=h["text"],
-                context=_extract_context(doc_text, h["text"], context_sentences),
+                context=_extract_context(doc_text, h["text"], n_before, n_after),
             )
             for h in raw
         ]

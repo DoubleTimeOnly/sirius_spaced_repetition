@@ -1,13 +1,13 @@
 import subprocess
 
-from .protocols import ExtractFn
+from .protocols import ExtractFn, Highlight
 
 
 def passthrough_extractor() -> ExtractFn:
     """Return an extractor that passes highlights through unchanged."""
 
-    def extract(highlight: str, context: str | None = None) -> str:
-        return highlight
+    def extract(highlight: Highlight) -> str:
+        return highlight.combine(bold_highlight=True)
 
     return extract
 
@@ -23,10 +23,11 @@ def claude_extractor(model: str = "claude-haiku-4-5-20251001", api_key: str | No
 
     client = anthropic.Anthropic(api_key=api_key)
 
-    def extract(highlight: str, context: str | None = None) -> str:
-        user_content = highlight
-        if context:
-            user_content = f"Context:\n{context}\n\nHighlight:\n{highlight}"
+    def extract(highlight: Highlight) -> str:
+        user_content = highlight.text
+        if highlight.context:
+            before, after = highlight.context
+            user_content = f"Context:\n{before}\n\nHighlight:\n{highlight.text}\n\n{after}"
 
         message = client.messages.create(
             model=model,
@@ -49,21 +50,21 @@ def claude_code_extractor(model: str = "haiku") -> ExtractFn:
     Args:
         model: Claude model ID to use.
     """
-    def extract(highlight: str, context: str | None = None) -> str:
-        
+    def extract(h: Highlight) -> str:
         system_prompt = (
             "You are a concise knowledge extractor. Given a highlight from a book or article, "
             "return only the core information or concept(s) it contains. "
             "Be brief and precise. Format the output as a Python dictionary with a single key 'core_info'."
         )
-        user_content = highlight
-        if context:
-            user_content = f"{system_prompt}\n\nContext:\n{context}\n\nHighlight:\n{highlight}"
+        user_content = h.text
+        if h.context:
+            before, after = h.context
+            user_content = f"{system_prompt}\n\nContext:\n{before}\n\nHighlight:\n{h.text}\n\n{after}"
 
         command = ["claude", "-p", user_content, "--model", model]
         result = subprocess.run(
             command,
-            capture_output=True, 
+            capture_output=True,
             text=True
         )
         return result.stdout.strip()
@@ -92,15 +93,16 @@ def local_llm_extractor(
     kwargs = {"device_map": "auto"} if device == "auto" else {"device": device}
     pipe = pipeline("text-generation", model=model, **kwargs)
 
-    def extract(highlight: str, context: str | None = None) -> str:
+    def extract(h: Highlight) -> str:
         system_prompt = (
             "You are a concise knowledge extractor. Given a highlight from a book or article, "
             "return only the core information or concept(s) it contains. "
             "Be brief and precise."
         )
-        user_content = highlight
-        if context:
-            user_content = f"Context:\n{context}\n\nHighlight:\n{highlight}"
+        user_content = h.text
+        if h.context:
+            before, after = h.context
+            user_content = f"Context:\n{before}\n\nHighlight:\n{h.text}\n\n{after}"
 
         messages = [
             {"role": "system", "content": system_prompt},

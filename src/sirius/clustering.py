@@ -26,13 +26,13 @@ def cluster_highlights(
         Mapping of cluster key -> set of highlight indices. A highlight may
         appear in multiple clusters (many-to-many).
     """
-    core_infos = [extract(h.text, h.context) for h in highlights]
+    core_infos = [extract(h) for h in highlights]
     logger.debug(f"Extracted {len(core_infos)} core infos from highlights")
     for i, (h, info) in enumerate(zip(highlights, core_infos)):
         output_str = ""
-        output_str += f"\/terminaln===== Highlight {i} =====\n"
+        output_str += f"\n===== Highlight {i} =====\n"
         len_header = len(output_str)
-        output_str += f"Original: {h.text}\n"
+        output_str += f"Original: {h.combine(bold_highlight=True)}\n"
         output_str += "-" * len_header + "\n"
         output_str += f"Core info: {info}\n"
         logger.debug(output_str)

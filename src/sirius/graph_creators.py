@@ -43,6 +43,7 @@ Rules:
 
 Output ONLY a JSON object with two keys: "nodes" and "edges".
 Do not output any markdown fences or commentary. Make sure the output is valid JSON. This means using double quotes (not smart quotes) for all strings, including keys and values.
+Don't make the json pretty-printed (i.e. no newlines or indentation), but it must be parseable by a standard JSON parser.
 
 Node schema (group):
   {"id": "<uuid>", "x": <int>, "y": <int>, "width": <int>, "height": <int>,
@@ -70,7 +71,7 @@ with open(_EXAMPLES_DIR / "How We Learn - Benedict Carey.canvas", "r") as f:
 with open(_EXAMPLES_DIR / "How We Learn - Benedict Carey.md", "r") as f:
     _EXAMPLE_HIGHLIGHTS = f.read()
 
-_SYSTEM_PROMPT += f"\n\nHere is an example of good output. The input highlights are delimited by triple backticks, and the corresponding JSON Canvas graph is shown after that:\n\n```\n{_EXAMPLE_HIGHLIGHTS}\n```\n\nExample output:\n\n{json.dumps(_EXAMPLE_CANVAS, indent=2)}\n"
+_SYSTEM_PROMPT += f"\n\nHere is an example of good output. The input highlights are delimited by triple backticks, and the corresponding JSON Canvas graph is shown after that. For the output JSON, note how the nodes and edges belong in their own list:\n\n```\n{_EXAMPLE_HIGHLIGHTS}\n```\n\nExample output:\n\n{json.dumps(_EXAMPLE_CANVAS, indent=2)}\n"
 
 
 def _build_user_message(cluster_mapping: ClusterMapping, highlights: Highlights) -> str:

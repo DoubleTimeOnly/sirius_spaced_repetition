@@ -12,5 +12,5 @@ def pprint_clusters(clusters: ClusterMapping, highlights: list[Highlight]) -> No
     for cluster_key, indices in clusters.items():
         logger.debug("Cluster %s:", cluster_key)
         for i in indices:
-            logger.debug("  - %s", highlights[i].text)
+            logger.debug("  - %s", highlights[i].combine(bold_highlight=True))
         logger.debug("")
