@@ -37,7 +37,9 @@ def cluster_highlights(
         output_str += f"Core info: {info}\n"
         logger.debug(output_str)
 
-    vectors = [encode(info) for info in core_infos]
+    # Combine core infos with context and batch encode all at once
+    texts_to_encode = [h.combine() for h in highlights]
+    vectors = encode(texts_to_encode)
     logger.debug(f"Encoded {len(vectors)} vectors")
 
     clusters = cluster(vectors)
