@@ -26,7 +26,8 @@ def _make_mock_components():
     """Return (parse, extract, encode, cluster) mocks suitable for pipeline tests."""
     mock_parse = MagicMock(return_value=HIGHLIGHTS)
     mock_extract = MagicMock(side_effect=lambda h, ctx=None: h)
-    mock_encode = MagicMock(side_effect=lambda t: np.ones(8))
+    # encode now takes a list of texts and returns a list of vectors
+    mock_encode = MagicMock(side_effect=lambda texts: [np.ones(8) for _ in texts])
     mock_cluster = MagicMock(return_value={0: {0, 1}, 1: {2, 3}})
     return mock_parse, mock_extract, mock_encode, mock_cluster
 
@@ -111,7 +112,8 @@ def test_create_pipeline_fn_output(tmp_path, monkeypatch):
     assert isinstance(result, dict) and all(isinstance(v, set) for v in result.values())
     parse.assert_called_once_with("fake_path.md")
     assert extract.call_count == len(HIGHLIGHTS)
-    assert encode.call_count == len(HIGHLIGHTS)
+    # encode is now called once with all texts in a batch
+    assert encode.call_count == 1
     cluster.assert_called_once()
 
 

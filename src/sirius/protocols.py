@@ -24,8 +24,8 @@ ClusterMapping = dict[Any, set[int]]  # cluster_key -> set of highlight indices
 # Highlight -> core_info_string
 ExtractFn = Callable[[Highlight], str]
 
-# text -> embedding vector
-EncodeFn = Callable[[str], np.ndarray]
+# list of texts -> list of embedding vectors
+EncodeFn = Callable[[list[str]], list[np.ndarray]]
 
 # vectors -> {cluster_key: {highlight_indices}}
 ClusterFn = Callable[[list[np.ndarray]], ClusterMapping]

@@ -1,0 +1,3 @@
+_target_: sirius.encoders.contextual_encoder
+model: "perplexity-ai/pplx-embed-context-v1-0.6B"
+device: ${pipeline.device}
