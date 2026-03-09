@@ -45,6 +45,7 @@ def create_pipeline_fn(pipeline_cfg: DictConfig, full_cfg: Optional[DictConfig] 
     # null_graph_creator() returns None → skip graph creation
     create_graph = instantiate(pipeline_cfg.graph_creator) if hasattr(pipeline_cfg, "graph_creator") else None
     output_base_dir = getattr(pipeline_cfg, "output_base_dir", "outputs")
+    enable_visualization = getattr(pipeline_cfg, "enable_cluster_visualization", False)
 
     def pipeline(filepath: str) -> ClusterMapping:
         stem = Path(filepath).stem
@@ -57,7 +58,15 @@ def create_pipeline_fn(pipeline_cfg: DictConfig, full_cfg: Optional[DictConfig] 
             _save_config(full_cfg, run_dir)
 
         highlights = parse(filepath)
-        cluster_mapping = cluster_highlights(highlights, extract, encode, cluster, preprocess=preprocess)
+        cluster_mapping = cluster_highlights(
+            highlights,
+            extract,
+            encode,
+            cluster,
+            preprocess=preprocess,
+            enable_visualization=enable_visualization,
+            run_dir=str(run_dir),
+        )
         if create_graph is not None:
             canvas = create_graph(cluster_mapping, highlights)
             _save_canvas(canvas, run_dir, stem)

@@ -9,3 +9,4 @@ defaults:
 
 device: cpu
 output_base_dir: outputs
+enable_cluster_visualization: false

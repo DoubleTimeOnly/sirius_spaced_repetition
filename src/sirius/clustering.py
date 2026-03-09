@@ -2,6 +2,7 @@ import logging
 from typing import Any, Optional
 
 from sirius.utils.cluster_viz import pprint_clusters
+from sirius.visualization import save_cluster_visualization
 
 from .protocols import ClusterFn, ClusteringPreprocessingFn, EncodeFn, ExtractFn, Highlights
 
@@ -14,6 +15,8 @@ def cluster_highlights(
     encode: EncodeFn,
     cluster: ClusterFn,
     preprocess: Optional[ClusteringPreprocessingFn] = None,
+    enable_visualization: bool = False,
+    run_dir: Optional[str] = None,
 ) -> dict[Any, set[int]]:
     """Cluster a list of highlights by semantic similarity.
 
@@ -23,6 +26,8 @@ def cluster_highlights(
         encode: Function to encode a text string into an embedding vector.
         preprocess: Optional function to preprocess vectors (e.g., dimensionality reduction).
         cluster: Function to cluster a list of vectors into groups.
+        enable_visualization: If True, save a 3D cluster visualization to run_dir.
+        run_dir: Directory to save visualization to. Required if enable_visualization is True.
 
     Returns:
         Mapping of cluster key -> set of highlight indices. A highlight may
@@ -44,6 +49,9 @@ def cluster_highlights(
     vectors = encode(texts_to_encode)
     logger.debug(f"Encoded {len(vectors)} vectors")
 
+    # Keep original vectors for visualization (before preprocessing)
+    vectors_original = vectors
+
     # Apply preprocessing if provided
     if preprocess is not None:
         vectors = preprocess(vectors)
@@ -55,5 +63,10 @@ def cluster_highlights(
 
     if logger.level <= logging.DEBUG:
         pprint_clusters(clusters, highlights)
+
+    # Save visualization if enabled
+    if enable_visualization and run_dir is not None:
+        viz_path = f"{run_dir}/cluster_visualization.html"
+        save_cluster_visualization(vectors_original, clusters, highlights, viz_path)
 
     return clusters
