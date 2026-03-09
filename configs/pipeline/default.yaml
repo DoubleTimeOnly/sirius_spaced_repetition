@@ -1,6 +1,6 @@
 defaults:
   - /highlight_parser@highlight_parser: readwise_api
-  - /encoder@encoder: sentence_transformer
+  - /encoder@encoder: contextual
   - /extractor@extractor: passthrough
   - /clusterer@clusterer: hdbscan
   - /graph_creator@graph_creator: none

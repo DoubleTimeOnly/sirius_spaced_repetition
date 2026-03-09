@@ -97,13 +97,11 @@ def local_llm_extractor(
         system_prompt = (
             "You are a concise knowledge extractor. Given a highlight from a book or article, "
             "return only the core information or concept(s) it contains. "
-            "Be brief and precise."
+            "Be brief and precise. "
+            "The highlight is surrounded by double asterisks like **this** and the context (if any) is provided before and after the highlight."
         )
-        user_content = h.text
-        if h.context:
-            before, after = h.context
-            user_content = f"Context:\n{before}\n\nHighlight:\n{h.text}\n\n{after}"
 
+        user_content = h.combine(bold_highlight=True)
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_content},

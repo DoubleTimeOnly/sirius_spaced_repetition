@@ -32,7 +32,7 @@ def cluster_highlights(
         output_str = ""
         output_str += f"\n===== Highlight {i} =====\n"
         len_header = len(output_str)
-        output_str += f"Original: {h.combine(bold_highlight=True)}\n"
+        output_str += f"Original: {h.text}\n"
         output_str += "-" * len_header + "\n"
         output_str += f"Core info: {info}\n"
         logger.debug(output_str)
