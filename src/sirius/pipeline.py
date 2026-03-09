@@ -2,9 +2,10 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from hydra.utils import instantiate
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from sirius.clustering import cluster_highlights
 from sirius.protocols import ClusterMapping, PipelineFn
@@ -26,7 +27,16 @@ def _save_canvas(canvas: dict, run_dir: Path, stem: str) -> Path:
     return out_path
 
 
-def create_pipeline_fn(pipeline_cfg: DictConfig) -> PipelineFn:
+def _save_config(cfg: DictConfig, run_dir: Path) -> Path:
+    out_path = run_dir / "config.yaml"
+    # Convert to regular Python dict and then back to resolve all interpolations
+    resolved_cfg = OmegaConf.to_container(cfg, resolve=True)
+    out_path.write_text(OmegaConf.to_yaml(resolved_cfg))
+    logger.info(f"Configuration saved to {out_path}")
+    return out_path
+
+
+def create_pipeline_fn(pipeline_cfg: DictConfig, full_cfg: Optional[DictConfig] = None) -> PipelineFn:
     parse = instantiate(pipeline_cfg.highlight_parser)
     extract = instantiate(pipeline_cfg.extractor)
     encode = instantiate(pipeline_cfg.encoder)
@@ -40,6 +50,10 @@ def create_pipeline_fn(pipeline_cfg: DictConfig) -> PipelineFn:
         run_dir = _run_dir(filepath, output_base_dir)
         run_dir.mkdir(parents=True, exist_ok=True)
         add_file_handler(run_dir / "run.log")
+
+        # Save config if provided
+        if full_cfg is not None:
+            _save_config(full_cfg, run_dir)
 
         highlights = parse(filepath)
         cluster_mapping = cluster_highlights(highlights, extract, encode, cluster)

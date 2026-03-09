@@ -65,3 +65,27 @@ def test_contextual_encoder_encoding_properties(contextual_encoder_instance):
     v1_batch = contextual_encoder_instance(["Spaced repetition improves long-term retention."])
     v2_batch = contextual_encoder_instance(["The mitochondria is the powerhouse of the cell."])
     assert not np.allclose(v1_batch[0], v2_batch[0])  # discriminative
+
+
+def test_contextual_encoder_batching(contextual_encoder_instance):
+    """Test that batching works correctly with large numbers of texts."""
+    # Create more than 100 texts to trigger batching (batch_size=100)
+    texts = [f"This is highlight number {i}. It contains some text." for i in range(150)]
+
+    # Encode all texts at once
+    vectors = contextual_encoder_instance(texts)
+
+    # Verify output format
+    assert isinstance(vectors, list) and len(vectors) == 150
+    for v in vectors:
+        assert isinstance(v, np.ndarray) and v.ndim == 1 and v.shape == (1024,)
+        assert np.issubdtype(v.dtype, np.floating)
+
+    # Verify determinism - same input should produce same output
+    vectors_again = contextual_encoder_instance(texts)
+    assert len(vectors_again) == len(vectors)
+    for v1, v2 in zip(vectors, vectors_again):
+        np.testing.assert_array_equal(v1, v2)
+
+    # Verify that different texts produce different embeddings
+    assert not np.allclose(vectors[0], vectors[1])

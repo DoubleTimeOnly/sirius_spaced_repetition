@@ -18,7 +18,7 @@ def sentence_transformer_encoder(
     """
     from sentence_transformers import SentenceTransformer
 
-    st_model = SentenceTransformer(model, device=device)
+    st_model = SentenceTransformer(model, device=device, trust_remote_code=True)
 
     def encode(texts: list[str]) -> list[np.ndarray]:
         """Encode a batch of texts to embeddings.
@@ -72,9 +72,18 @@ def contextual_encoder(
         """
         # Perplexity model expects: [[chunk1, chunk2, ..., chunkN]]
         # (list of documents, each document is a list of chunks)
-        embeddings = llm_model.encode([texts])
-        # embeddings shape: (N, 1024) where N is number of chunks
-        # Convert to list of 1D arrays
-        return list(embeddings)
+        # Process in batches to avoid OOM
+        batch_size = 100
+        batch_embeddings_list = []
+
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            batch_embeddings = llm_model.encode([batch], quantization="binary")[0]
+            # batch_embeddings shape: (len(batch), 1024)
+            batch_embeddings_list.append(batch_embeddings)
+
+        # Concatenate all batch embeddings, then convert to list of 1D arrays
+        all_embeddings = np.concatenate(batch_embeddings_list, axis=0)
+        return list(all_embeddings)
 
     return encode

@@ -4,4 +4,4 @@ hdbscan_kwargs:
   min_samples: 1
   cluster_selection_method: "leaf"
   metric: "cosine"
-threshold: 0.5
+threshold: -1

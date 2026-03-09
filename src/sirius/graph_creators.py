@@ -150,7 +150,7 @@ def claude_graph_creator(model: str = "claude-haiku-4-5-20251001", api_key: str 
 
         message = client.messages.create(
             model=model,
-            max_tokens=4 * 4096,
+            max_tokens=20000,
             system=_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_content}],
         )
