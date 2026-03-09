@@ -2,6 +2,7 @@ defaults:
   - /highlight_parser@highlight_parser: readwise_api
   - /encoder@encoder: contextual
   - /extractor@extractor: passthrough
+  - /clustering_preprocessing@clustering_preprocessing: none
   - /clusterer@clusterer: hdbscan
   - /graph_creator@graph_creator: none
   - _self_

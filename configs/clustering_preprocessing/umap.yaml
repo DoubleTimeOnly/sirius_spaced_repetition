@@ -1,0 +1,6 @@
+_target_: sirius.clustering_preprocessors.umap_preprocessing
+n_components: 10
+n_neighbors: 5
+min_dist: 0.1
+metric: cosine
+random_state: 42

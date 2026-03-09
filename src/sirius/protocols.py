@@ -27,6 +27,9 @@ ExtractFn = Callable[[Highlight], str]
 # list of texts -> list of embedding vectors
 EncodeFn = Callable[[list[str]], list[np.ndarray]]
 
+# vectors -> preprocessed vectors (e.g., dimensionality reduction)
+ClusteringPreprocessingFn = Callable[[list[np.ndarray]], list[np.ndarray]]
+
 # vectors -> {cluster_key: {highlight_indices}}
 ClusterFn = Callable[[list[np.ndarray]], ClusterMapping]
 

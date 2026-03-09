@@ -15,6 +15,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest"]
 gpu = ["torch", "torchvision", "torchaudio", "accelerate"]
+umap = ["umap-learn"]
 
 [tool.pytest.ini_options]
 markers = [

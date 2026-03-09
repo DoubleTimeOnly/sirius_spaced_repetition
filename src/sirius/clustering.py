@@ -1,9 +1,9 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from sirius.utils.cluster_viz import pprint_clusters
 
-from .protocols import ClusterFn, EncodeFn, ExtractFn, Highlights
+from .protocols import ClusterFn, ClusteringPreprocessingFn, EncodeFn, ExtractFn, Highlights
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +13,7 @@ def cluster_highlights(
     extract: ExtractFn,
     encode: EncodeFn,
     cluster: ClusterFn,
+    preprocess: Optional[ClusteringPreprocessingFn] = None,
 ) -> dict[Any, set[int]]:
     """Cluster a list of highlights by semantic similarity.
 
@@ -20,6 +21,7 @@ def cluster_highlights(
         highlights: List of Highlight objects.
         extract: Function to distil a highlight into its core information.
         encode: Function to encode a text string into an embedding vector.
+        preprocess: Optional function to preprocess vectors (e.g., dimensionality reduction).
         cluster: Function to cluster a list of vectors into groups.
 
     Returns:
@@ -41,6 +43,11 @@ def cluster_highlights(
     texts_to_encode = [h.combine() for h in highlights]
     vectors = encode(texts_to_encode)
     logger.debug(f"Encoded {len(vectors)} vectors")
+
+    # Apply preprocessing if provided
+    if preprocess is not None:
+        vectors = preprocess(vectors)
+        logger.debug(f"Preprocessed vectors")
 
     clusters = cluster(vectors)
     logger.debug(f"Clustered into {len(clusters)} clusters")
